@@ -5,9 +5,9 @@ import ssl
 from websockets.asyncio.client import connect
 
 from .config import Config
-from .client.mgmt import get_api_version, login, logout, smcb_authentication
-from .client.smcb import StateMachine
-from .client.smcb.states import Authenticated
+from .client.kt.mgmt import get_api_version, login, logout, smcb_authentication
+from .client.kt.smcb import StateMachine
+from .client.kt.smcb.states import Authenticated
 
 SUPPORTED_API_VERSIONS = ["3.2"]
 WS_MGMT_PROTOCOL = "cobra"
