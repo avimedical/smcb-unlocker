@@ -1,4 +1,7 @@
-base_url: wss://1.2.3.4
-mgmt_username: admin
-mgmt_password: 12345678
-smcb_pin: 12345678
+konnektor_base_url: https://hsk.example.com:8500
+konnektor_admin_username: admin
+konnektor_admin_password: password
+kt_base_url: wss://1.2.3.4
+kt_mgmt_username: admin
+kt_mgmt_password: "12345678"
+smcb_pin: "12345678"
