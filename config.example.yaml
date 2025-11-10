@@ -1,0 +1,4 @@
+base_url: wss://1.2.3.4
+mgmt_username: admin
+mgmt_password: 12345678
+smcb_pin: 12345678
