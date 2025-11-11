@@ -6,7 +6,15 @@ from .header import Header
 
 
 class OutputRequestPayload(BaseModel):
-    pass
+    Slot: str | None = None
+    Atr: str | None = None
+    Message: str
+    MessageType: str
+    MessageCode: str
+    Timeout: int
+    OkButton: bool
+    CancelButton: bool
+    ExpectResponse: bool
 
 
 class OutputRequest(BaseModel):

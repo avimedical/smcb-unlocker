@@ -4,8 +4,10 @@ from pydantic import BaseModel
 
 from .header import Header
 
+
 class OutputResponsePayload(BaseModel):
-    pass
+    Code: str    
+
 
 class OutputResponse(BaseModel):
     Header: Header

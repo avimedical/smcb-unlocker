@@ -1,8 +1,16 @@
+import logging
+
 from websockets.asyncio.client import ClientConnection
 
+from .drain import Drain
 from .state import State
 from .state_context import StateContext
-from ..model import WsModel
+from .util import get_id, NOTIFY_CODES
+from ..model import Header, InputPinRequest, InputPinResponse, InputPinResponsePayload, Notify, WsModel
+
+
+log = logging.getLogger(__name__)
+
 
 class Authenticated(State):
     ws: ClientConnection
@@ -12,6 +20,34 @@ class Authenticated(State):
         self.ws = ws
         self.ctx = ctx
 
+    async def handle_input_pin_request(self, req: InputPinRequest) -> Authenticated:
+        res = InputPinResponse(
+            Header=Header(MsgId=get_id(), InReplyToId=req.Header.MsgId, SessionId=self.ctx.session_id),
+            PayloadType="InputPinResponse",
+            Payload=InputPinResponsePayload(Code="Pin", Pin=self.ctx.smcb_pin)
+        )
+        res_json = res.model_dump_json(exclude_none=True)
+        log.debug(f"RES {res.Header.MsgId}: {res_json}")
+        await self.ws.send(res_json)
+
+        return self
+    
+
+    async def handle_notify(self, notify: Notify) -> Authenticated:
+        log.debug(f"NOTIFY {notify.Header.MsgId}: {notify.model_dump_json(exclude_none=True)}")
+
+        if notify.Payload.Code != 0:
+            raise RuntimeError(f"Notify error {notify.Payload.Code}: {NOTIFY_CODES.get(notify.Payload.Code, 'Unknown error code')}")
+
+        return Drain(self.ws, self.ctx)
+
+
     async def handle_msg(self, msg: WsModel) -> State:
         # Handle messages specific to the authenticated state
-        pass
+        if isinstance(msg.msg, InputPinRequest):
+            return await self.handle_input_pin_request(msg.msg)
+        if isinstance(msg.msg, Notify):
+            return await self.handle_notify(msg.msg)
+
+        log.warning(f"Unhandled message type in Authenticated state: {type(msg.msg)}")
+        return self

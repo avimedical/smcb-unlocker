@@ -3,7 +3,7 @@ from collections.abc import Awaitable, Callable
 from websockets.asyncio.client import ClientConnection
 
 from .model import WsModel
-from .states import State, StateContext, Authenticated, Connected
+from .states import State, StateContext, Connected, End
 
 
 class StateMachine:
@@ -31,3 +31,6 @@ class StateMachine:
             if new_state is not self.state and self.on_state_change:
                 await self.on_state_change(self.state, new_state)
             self.state = new_state
+
+            if isinstance(self.state, End):
+                break

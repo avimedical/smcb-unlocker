@@ -7,29 +7,11 @@ from websockets.asyncio.client import ClientConnection
 from .authenticated import Authenticated
 from .state import State
 from .state_context import StateContext
-from .util import get_id
+from .util import get_id, NOTIFY_CODES
 from ..model import AuthenticateRequest, AuthenticateResponse, AuthenticateResponsePayload, Header, Notify, WsModel
 
 
 log = logging.getLogger(__name__)
-
-
-NOTIFY_CODES = {
-    0: "Success",
-    1: "ParserError",
-    2: "AuthenticationRequired",
-    3: "AuthenticationDenied",
-    4: "InvalidSessionId",
-    5: "InvalidMessageId",
-    6: "InvalidInReplyToId",
-    7: "MissingInReplyToId",
-    8: "InvalidChallengeResponse",
-    9: "MissingPin",
-    10: "InvalidPin",
-    11: "InvalidPinLength",
-    12: "UnexpectedPin",
-    13: "InvalidOutputCode",
-}
 
 
 class Connected(State):
