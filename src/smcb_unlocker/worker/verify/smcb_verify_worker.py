@@ -6,6 +6,12 @@ from ...job import SmcbVerifyJob
 
 
 class SmcbVerifyWorker:
+    job_queue: asyncio.Queue[SmcbVerifyJob] | None
+
+    def ensure_connected(self):
+        if not self.job_queue:
+            raise RuntimeError("SmcbVerifyWorker is not connected. Call 'connect' method on DiscoverLockedSmcbWorker first.")
+
     async def handle(self, job: SmcbVerifyJob):
         konnektor_verifier = KonnektorSmcbVerifier(
             base_url=job.konnektor_base_url,
@@ -24,3 +30,10 @@ class SmcbVerifyWorker:
             kt_task = tg.create_task(kt_verifier.run(job.smcb_pin))
 
         return konnektor_task.result(), kt_task.result()
+    
+    async def run(self):
+        self.ensure_connected()
+        while True:
+            job = await self.job_queue.get()
+            await self.handle(job)
+            self.job_queue.task_done()
