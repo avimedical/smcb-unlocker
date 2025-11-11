@@ -4,4 +4,5 @@ konnektor_admin_password: password
 kt_base_url: wss://1.2.3.4
 kt_mgmt_username: admin
 kt_mgmt_password: "12345678"
+smcb_iccsn: "00000000000000000000"
 smcb_pin: "12345678"

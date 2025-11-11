@@ -9,6 +9,7 @@ class Config(BaseSettings):
     kt_base_url: str
     kt_mgmt_username: str
     kt_mgmt_password: str
+    smcb_iccsn: str
     smcb_pin: str
 
     @classmethod
