@@ -15,6 +15,9 @@ class SmcbVerifyWorker:
         self.credentials = credentials
         self.job_queue = None
 
+    def connectInput(self, job_queue: asyncio.Queue[SmcbVerifyJob]):
+        self.job_queue = job_queue
+
     def ensure_connected(self):
         if not self.job_queue:
             raise RuntimeError("SmcbVerifyWorker is not connected. Call 'connect' method on DiscoverLockedSmcbWorker first.")

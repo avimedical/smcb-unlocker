@@ -26,10 +26,8 @@ class DiscoverLockedSmcbWorker:
     def connectInput(self, disover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob]):
         self.discover_job_queue = disover_job_queue
 
-    def connectWorkers(self, workers: list[SmcbVerifyWorker]):
-        self.verify_job_queue = asyncio.Queue()
-        for worker in workers:
-            worker.job_queue = self.verify_job_queue
+    def connectOutput(self, verify_job_queue: asyncio.Queue[SmcbVerifyJob]):
+        self.verify_job_queue = verify_job_queue
 
     def ensure_connected(self):
         if not self.discover_job_queue or not self.verify_job_queue:

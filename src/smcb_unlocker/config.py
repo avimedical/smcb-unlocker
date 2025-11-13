@@ -25,6 +25,8 @@ class ConfigCredentials(BaseModel):
 class Config(BaseSettings):
     model_config = SettingsConfigDict(yaml_file=['config.yaml'])
 
+    discover_workers: int = 1
+    verify_workers: int = 1
     konnektors: dict[str, ConfigKonnektor]
     credentials: ConfigCredentials
 
