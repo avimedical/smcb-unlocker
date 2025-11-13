@@ -11,15 +11,10 @@ class MandantSmb(BaseModel):
     telematikId: str | None
 
 
-class MandantPayload(BaseModel):
+class Mandant(BaseModel):
     assignedCardTerminalInternalIds: list[str]
     internalId: str
     managedSmbs: list[MandantSmb]
     mandantId: str
     remotePinCardTerminals: list[str]
     validateTelematikId: bool
-
-
-class Mandant(BaseModel):
-    mandant: MandantPayload
-    remotePinCardTerminals: list[str]

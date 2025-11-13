@@ -4,7 +4,7 @@ import logging
 import httpx
 
 from ..verify.smcb_verify_worker import SmcbVerifyWorker
-from ...client.konnektor.admin import get_cards, get_mandants_for_card, get_pin_status_for_card, login
+from ...client.konnektor.admin import get_card_terminals, get_mandants, get_pin_status_for_card, login
 from ...job import DiscoverLockedSmcbJob, SmcbVerifyJob
 
 
@@ -31,30 +31,36 @@ class DiscoverLockedSmcbWorker:
         async with httpx.AsyncClient(verify=False) as client:
             auth = await login(client, discover_job.konnektor_base_url, discover_job.konnektor_admin_username, discover_job.konnektor_admin_password)
             
-            cards = await get_cards(client, discover_job.konnektor_base_url, auth)
-            smcb_cards = [card for card in cards if card.type == 'SMC_B']
+            mandants = await get_mandants(client, discover_job.konnektor_base_url, auth)
+            card_terminals = await get_card_terminals(client, discover_job.konnektor_base_url, auth)
 
-            for smcb_card in smcb_cards:       
-                mandants = await get_mandants_for_card(client, discover_job.konnektor_base_url, auth, smcb_card.cardhandle)
-                if len(mandants) == 0:
-                    log.warning(f"No mandants found for SMCB card with ICCSN {smcb_card.iccsn}")
-                    continue
-                mandant = mandants[0]
+            mandants_by_smcb_iccsn = { smb.iccsn: mandant for mandant in mandants for smb in mandant.managedSmbs }
 
-                pin_status = await get_pin_status_for_card(client, discover_job.konnektor_base_url, auth, smcb_card.cardhandle, mandant.mandant.mandantId)
-                if pin_status.status == "VERIFIABLE":
-                    verify_job = SmcbVerifyJob(
-                        konnektor_base_url=discover_job.konnektor_base_url,
-                        konnektor_admin_username=discover_job.konnektor_admin_username,
-                        konnektor_admin_password=discover_job.konnektor_admin_password,
-                        # TODO: Fetch KTs
-                        kt_base_url="wss://10.0.22.111",
-                        kt_mgmt_username=discover_job.kt_mgmt_username,
-                        kt_mgmt_password=discover_job.kt_mgmt_password,
-                        smcb_iccsn=smcb_card.iccsn,
-                        smcb_pin=discover_job.smcb_pin,
-                    )
-                    await self.verify_job_queue.put(verify_job)
+            for card_terminal in card_terminals:
+                for card in card_terminal.slotInfos:
+                    if card.type != 'SMC_B':
+                        continue
+
+                    mandant = mandants_by_smcb_iccsn.get(card.iccsn)
+                    if not mandant:
+                        log.warning(f"No mandant found for SMCB card with ICCSN {card.iccsn}")
+                        continue
+
+                    pin_status = await get_pin_status_for_card(client, discover_job.konnektor_base_url, auth, card.cardhandle, mandant.mandantId)
+                    if pin_status.status == "VERIFIABLE":
+                        verify_job = SmcbVerifyJob(
+                            konnektor_base_url=discover_job.konnektor_base_url,
+                            konnektor_auth=auth,
+                            kt_id=card_terminal.cardTerminalId,
+                            kt_base_url=f"wss://{card_terminal.ipAddress}",
+                            kt_mgmt_username=discover_job.kt_mgmt_username,
+                            kt_mgmt_password=discover_job.kt_mgmt_password,
+                            smcb_iccsn=card.iccsn,
+                            smcb_cardhandle=card.cardhandle,
+                            smcb_pin=discover_job.smcb_pin,
+                            mandant_id=mandant.mandantId,
+                        )
+                        await self.verify_job_queue.put(verify_job)  
 
     async def run(self):
         self.ensure_connected()
