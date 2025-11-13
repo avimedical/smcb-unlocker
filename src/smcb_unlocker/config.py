@@ -1,16 +1,32 @@
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, YamlConfigSettingsSource
+
+
+class ConfigKonnektor(BaseModel):
+    base_url: str
+    interval: int
+
+
+class ConfigUserCredentials(BaseModel):
+    username: str
+    password: str
+
+
+class ConfigPinCredentials(BaseModel):
+    pin: str
+
+
+class ConfigCredentials(BaseModel):
+    konnektors: dict[str, ConfigUserCredentials]
+    kt: dict[str, ConfigUserCredentials]
+    smcb: dict[str, ConfigPinCredentials]
+
 
 class Config(BaseSettings):
     model_config = SettingsConfigDict(yaml_file=['config.yaml'])
 
-    konnektor_base_url: str
-    konnektor_admin_username: str
-    konnektor_admin_password: str
-    kt_base_url: str
-    kt_mgmt_username: str
-    kt_mgmt_password: str
-    smcb_iccsn: str
-    smcb_pin: str
+    konnektors: dict[str, ConfigKonnektor]
+    credentials: ConfigCredentials
 
     @classmethod
     def settings_customise_sources(

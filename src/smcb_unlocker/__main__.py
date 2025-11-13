@@ -15,8 +15,8 @@ async def main():
     config = Config()
 
     discover_job_queue = asyncio.Queue()
-    discover_locked_smcb_worker = DiscoverLockedSmcbWorker()
-    smcb_verify_worker = SmcbVerifyWorker()
+    discover_locked_smcb_worker = DiscoverLockedSmcbWorker(config.credentials)
+    smcb_verify_worker = SmcbVerifyWorker(config.credentials)
     discover_locked_smcb_worker.connectInput(discover_job_queue)
     discover_locked_smcb_worker.connectWorkers([smcb_verify_worker])
 
@@ -24,14 +24,11 @@ async def main():
         tg.create_task(discover_locked_smcb_worker.run())
         tg.create_task(smcb_verify_worker.run())
 
+        konnektor_config = config.konnektors['dev']
         while True:
             job = DiscoverLockedSmcbJob(
-                konnektor_base_url=config.konnektor_base_url,
-                konnektor_admin_username=config.konnektor_admin_username,
-                konnektor_admin_password=config.konnektor_admin_password,
-                kt_mgmt_username=config.kt_mgmt_username,
-                kt_mgmt_password=config.kt_mgmt_password,
-                smcb_pin=config.smcb_pin,
+                konnektor_name='dev',
+                konnektor_base_url=konnektor_config.base_url,
             )
             await discover_job_queue.put(job)
             await asyncio.sleep(60)

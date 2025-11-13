@@ -1,8 +1,25 @@
-konnektor_base_url: https://hsk.example.com:8500
-konnektor_admin_username: admin
-konnektor_admin_password: password
-kt_base_url: wss://1.2.3.4
-kt_mgmt_username: admin
-kt_mgmt_password: "12345678"
-smcb_iccsn: "00000000000000000000"
-smcb_pin: "12345678"
+konnektors:
+  example:
+    base_url: https://example.com:8500
+    interval: 60
+
+credentials:
+  konnektors:
+    _default:
+      username: super
+      password: konnektor
+    example:
+      username: super
+      password: "Password!"
+  kt:
+    _default:
+      username: admin
+      password: "12345678"
+    "00:1B:2C:3D:4E:5F":
+      username: admin
+      password: "87654321"
+  smcb:
+    _default:
+      pin: "12345678"
+    "00000000000000000000":
+      pin: "87654321"

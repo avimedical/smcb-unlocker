@@ -4,6 +4,7 @@ import logging
 import httpx
 
 from ..verify.smcb_verify_worker import SmcbVerifyWorker
+from ...config import ConfigCredentials, ConfigUserCredentials
 from ...client.konnektor.admin import get_card_terminals, get_mandants, get_pin_status_for_card, login
 from ...job import DiscoverLockedSmcbJob, SmcbVerifyJob
 
@@ -12,8 +13,15 @@ log = logging.getLogger(__name__)
 
 
 class DiscoverLockedSmcbWorker:
+    credentials: ConfigCredentials
+
     discover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob] | None
     verify_job_queue: asyncio.Queue[SmcbVerifyJob] | None
+
+    def __init__(self, credentials: ConfigCredentials):
+        self.credentials = credentials
+        self.discover_job_queue = None
+        self.verify_job_queue = None
 
     def connectInput(self, disover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob]):
         self.discover_job_queue = disover_job_queue
@@ -26,11 +34,15 @@ class DiscoverLockedSmcbWorker:
     def ensure_connected(self):
         if not self.discover_job_queue or not self.verify_job_queue:
             raise RuntimeError("DiscoverLockedSmcbWorker is not connected. Call 'connect*' methods first.")
+        
+    def get_credentials(self, konnektor_name: str) -> ConfigUserCredentials:
+        return self.credentials.konnektors.get(konnektor_name, self.credentials.konnektors.get('_default'))
 
     async def handle(self, discover_job: DiscoverLockedSmcbJob):
         async with httpx.AsyncClient(verify=False) as client:
-            auth = await login(client, discover_job.konnektor_base_url, discover_job.konnektor_admin_username, discover_job.konnektor_admin_password)
-            
+            creds = self.get_credentials(discover_job.konnektor_name)
+            auth = await login(client, discover_job.konnektor_base_url, creds.username, creds.password)
+
             mandants = await get_mandants(client, discover_job.konnektor_base_url, auth)
             card_terminals = await get_card_terminals(client, discover_job.konnektor_base_url, auth)
 
@@ -53,11 +65,9 @@ class DiscoverLockedSmcbWorker:
                             konnektor_auth=auth,
                             kt_id=card_terminal.cardTerminalId,
                             kt_base_url=f"wss://{card_terminal.ipAddress}",
-                            kt_mgmt_username=discover_job.kt_mgmt_username,
-                            kt_mgmt_password=discover_job.kt_mgmt_password,
+                            kt_mac=card_terminal.macAddress,
                             smcb_iccsn=card.iccsn,
                             smcb_cardhandle=card.cardhandle,
-                            smcb_pin=discover_job.smcb_pin,
                             mandant_id=mandant.mandantId,
                         )
                         await self.verify_job_queue.put(verify_job)  
