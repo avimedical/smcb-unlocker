@@ -1,5 +1,10 @@
 log_level: INFO
+sentry_dsn: null
+sentry_monitor_slug_prefix: smcb-unlocker-discover
+
+discover_queue_size: 10
 discover_workers: 1
+verify_queue_size: 10
 verify_workers: 1
 
 konnektors:

@@ -1,6 +1,8 @@
 import asyncio
 import logging
 
+import sentry_sdk
+
 from smcb_unlocker.worker.verify.konnektor_smcb_verifier import KonnektorSmcbVerifier
 from smcb_unlocker.worker.verify.kt_smcb_verifier import KtSmcbVerifier
 from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials, ConfigPinCredentials
@@ -64,5 +66,6 @@ class SmcbVerifyWorker:
                 log.info(f"END {job}")
             except Exception as e:
                 log.error(f"ERROR {job}: {e}")
+                sentry_sdk.capture_exception(e)
 
             self.job_queue.task_done()

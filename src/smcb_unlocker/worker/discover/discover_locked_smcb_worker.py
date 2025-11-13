@@ -2,8 +2,8 @@ import asyncio
 import logging
 
 import httpx
+import sentry_sdk
 
-from smcb_unlocker.worker.verify.smcb_verify_worker import SmcbVerifyWorker
 from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials
 from smcb_unlocker.client.konnektor.admin import get_card_terminals, get_mandants, get_pin_status_for_card, login
 from smcb_unlocker.job import DiscoverLockedSmcbJob, SmcbVerifyJob
@@ -81,5 +81,6 @@ class DiscoverLockedSmcbWorker:
                 log.info(f"END {discover_job}")
             except Exception as e:
                 log.error(f"ERROR {discover_job}: {e}")
+                sentry_sdk.capture_exception(e)
             
             self.discover_job_queue.task_done()

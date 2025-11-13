@@ -10,7 +10,8 @@ dependencies = [
     "httpx==0.28.1",
     "pydantic==2.12.4",
     "pydantic-settings[yaml]==2.12.0",
-    "websockets==15.0.1"
+    "websockets==15.0.1",
+    "sentry-sdk (==2.44.0)"
 ]
 
 [build-system]
@@ -19,3 +20,12 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 package-mode = false
+
+[tool.pytest]
+asyncio_mode = "auto"
+
+[dependency-groups]
+test = [
+    "pytest (==9.0.0)",
+    "pytest-asyncio (==1.3.0)"
+]

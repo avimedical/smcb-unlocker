@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+import sentry_sdk
 
 from smcb_unlocker.config import Config
 from smcb_unlocker.job import DiscoverLockedSmcbJob, SmcbVerifyJob
@@ -14,16 +15,23 @@ log = logging.getLogger(__name__)
 
 async def main():
     config = Config()
+    
     logging.basicConfig(level=config.log_level)
     # Disable httpx INFO level logging to reduce noise
     logging.getLogger("httpx").setLevel(logging.WARNING)
+
+    sentry_sdk.init(dsn=config.sentry_dsn)
 
     discover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob] = asyncio.Queue(config.discover_queue_size)
     verify_job_queue: asyncio.Queue[SmcbVerifyJob] = asyncio.Queue(config.verify_queue_size)
     
     schedule_workers: list[JobIntervalScheduler[DiscoverLockedSmcbJob]] = [
-        JobIntervalScheduler(lambda: DiscoverLockedSmcbJob(name, config.base_url), config.interval)
-        for name, config in config.konnektors.items()
+        JobIntervalScheduler(
+            lambda: DiscoverLockedSmcbJob(konnektor_name, konnektor_config.base_url),
+            konnektor_config.interval,
+            f"{config.sentry_monitor_slug_prefix}-{konnektor_name}" if config.sentry_monitor_slug_prefix else None
+        )
+        for konnektor_name, konnektor_config in config.konnektors.items()
     ]
     discover_workers = [
         DiscoverLockedSmcbWorker(config.credentials)
