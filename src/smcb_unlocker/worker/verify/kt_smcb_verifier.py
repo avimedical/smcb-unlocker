@@ -52,14 +52,12 @@ class KtSmcbVerifier:
                 log.warning(f"API version {api_version} not supported, supported versions are: {SUPPORTED_API_VERSIONS}")
 
             session_id = await login(ws, self.mgmt_username, self.mgmt_password)
-            log.info(f"Logged in with session ID: {session_id}")
             
             try:
                 return await smcb_authentication(ws, session_id)
             finally:
                 # Avoid "Session store full" errors by logging out
                 await logout(ws, session_id)
-                log.info("Logged out")
 
     async def verify_smcb(self, smcb_key: str, smcb_pin: str) -> bool:
         ssl_context = ssl.create_default_context()

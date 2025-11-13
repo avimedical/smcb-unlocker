@@ -1,9 +1,13 @@
 import asyncio
+import logging
 
 from .konnektor_smcb_verifier import KonnektorSmcbVerifier
 from .kt_smcb_verifier import KtSmcbVerifier
 from ...config import ConfigCredentials, ConfigUserCredentials, ConfigPinCredentials
 from ...job import SmcbVerifyJob
+
+
+log = logging.getLogger(__name__)
 
 
 class SmcbVerifyWorker:
@@ -53,5 +57,12 @@ class SmcbVerifyWorker:
         self.ensure_connected()
         while True:
             job = await self.job_queue.get()
-            await self.handle(job)
+
+            try:
+                log.info(f"START {job}")
+                await self.handle(job)
+                log.info(f"END {job}")
+            except Exception as e:
+                log.error(f"ERROR {job}: {e}")
+
             self.job_queue.task_done()

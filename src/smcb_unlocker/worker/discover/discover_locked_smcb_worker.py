@@ -74,5 +74,12 @@ class DiscoverLockedSmcbWorker:
         self.ensure_connected()
         while True:
             discover_job = await self.discover_job_queue.get()
-            await self.handle(discover_job)
+            
+            try:
+                log.info(f"START {discover_job}")
+                await self.handle(discover_job)
+                log.info(f"END {discover_job}")
+            except Exception as e:
+                log.error(f"ERROR {discover_job}: {e}")
+            
             self.discover_job_queue.task_done()

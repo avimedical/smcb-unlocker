@@ -25,7 +25,10 @@ class ConfigCredentials(BaseModel):
 class Config(BaseSettings):
     model_config = SettingsConfigDict(yaml_file=['config.yaml'])
 
+    log_level: str = "INFO"
+    discover_queue_size: int = 10
     discover_workers: int = 1
+    verify_queue_size: int = 10
     verify_workers: int = 1
     konnektors: dict[str, ConfigKonnektor]
     credentials: ConfigCredentials

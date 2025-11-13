@@ -9,15 +9,17 @@ from .worker.schedule.job_interval_scheduler import JobIntervalScheduler
 from .worker.verify.smcb_verify_worker import SmcbVerifyWorker
 
 
-logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
 async def main():
     config = Config()
+    logging.basicConfig(level=config.log_level)
+    # Disable httpx INFO level logging to reduce noise
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
-    discover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob] = asyncio.Queue()
-    verify_job_queue: asyncio.Queue[SmcbVerifyJob] = asyncio.Queue()
+    discover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob] = asyncio.Queue(config.discover_queue_size)
+    verify_job_queue: asyncio.Queue[SmcbVerifyJob] = asyncio.Queue(config.verify_queue_size)
     
     schedule_workers: list[JobIntervalScheduler[DiscoverLockedSmcbJob]] = [
         JobIntervalScheduler(lambda: DiscoverLockedSmcbJob(name, config.base_url), config.interval)
