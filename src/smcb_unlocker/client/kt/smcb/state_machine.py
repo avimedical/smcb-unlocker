@@ -2,8 +2,8 @@ from collections.abc import Awaitable, Callable
 
 from websockets.asyncio.client import ClientConnection
 
-from .model import WsModel
-from .states import State, StateContext, Connected, End
+from smcb_unlocker.client.kt.smcb.model import WsModel
+from smcb_unlocker.client.kt.smcb.states import State, StateContext, Connected, End
 
 
 class StateMachine:

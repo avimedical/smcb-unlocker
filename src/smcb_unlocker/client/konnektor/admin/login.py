@@ -1,6 +1,6 @@
 from httpx import AsyncClient
 
-from .model import LoginRequest
+from smcb_unlocker.client.konnektor.admin.model import LoginRequest
 
 
 async def login(client: AsyncClient, base_url: str, username: str, password: str) -> str:

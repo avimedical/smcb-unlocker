@@ -2,11 +2,11 @@ import asyncio
 import logging
 
 
-from .config import Config
-from .job import DiscoverLockedSmcbJob, SmcbVerifyJob
-from .worker.discover.discover_locked_smcb_worker import DiscoverLockedSmcbWorker
-from .worker.schedule.job_interval_scheduler import JobIntervalScheduler
-from .worker.verify.smcb_verify_worker import SmcbVerifyWorker
+from smcb_unlocker.config import Config
+from smcb_unlocker.job import DiscoverLockedSmcbJob, SmcbVerifyJob
+from smcb_unlocker.worker.discover.discover_locked_smcb_worker import DiscoverLockedSmcbWorker
+from smcb_unlocker.worker.schedule.job_interval_scheduler import JobIntervalScheduler
+from smcb_unlocker.worker.verify.smcb_verify_worker import SmcbVerifyWorker
 
 
 log = logging.getLogger(__name__)

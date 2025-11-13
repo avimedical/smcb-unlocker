@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ..model import WsModel
+from smcb_unlocker.client.kt.smcb.model import WsModel
 
 
 class State(ABC):

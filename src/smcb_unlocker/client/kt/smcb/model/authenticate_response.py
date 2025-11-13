@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from .header import Header
+from smcb_unlocker.client.kt.smcb.model.header import Header
 
 
 class AuthenticateResponsePayload(BaseModel):

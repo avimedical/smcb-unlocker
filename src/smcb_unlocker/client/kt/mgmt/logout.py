@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel
 from websockets.asyncio.client import ClientConnection
 
-from .shared import get_id, Header
+from smcb_unlocker.client.kt.mgmt.shared import get_id, Header
 
 
 log = logging.getLogger(__name__)

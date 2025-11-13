@@ -2,11 +2,11 @@ import logging
 
 from websockets.asyncio.client import ClientConnection
 
-from .drain import Drain
-from .state import State
-from .state_context import StateContext
-from .util import get_id, NOTIFY_CODES
-from ..model import Header, InputPinRequest, InputPinResponse, InputPinResponsePayload, Notify, WsModel
+from smcb_unlocker.client.kt.smcb.states.drain import Drain
+from smcb_unlocker.client.kt.smcb.states.state import State
+from smcb_unlocker.client.kt.smcb.states.state_context import StateContext
+from smcb_unlocker.client.kt.smcb.states.util import get_id, NOTIFY_CODES
+from smcb_unlocker.client.kt.smcb.model import Header, InputPinRequest, InputPinResponse, InputPinResponsePayload, Notify, WsModel
 
 
 log = logging.getLogger(__name__)

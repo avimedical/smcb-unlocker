@@ -3,9 +3,9 @@ import logging
 
 import httpx
 
-from . import kt_smcb_verifier
-from ...client.konnektor.admin import get_pin_status_for_card, verify_pin_for_card
-from ...client.konnektor.admin.model import PinStatus
+from smcb_unlocker.worker.verify import kt_smcb_verifier
+from smcb_unlocker.client.konnektor.admin import get_pin_status_for_card, verify_pin_for_card
+from smcb_unlocker.client.konnektor.admin.model import PinStatus
 
 
 log = logging.getLogger(__name__)

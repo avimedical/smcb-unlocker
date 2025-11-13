@@ -3,10 +3,10 @@ import logging
 
 import httpx
 
-from ..verify.smcb_verify_worker import SmcbVerifyWorker
-from ...config import ConfigCredentials, ConfigUserCredentials
-from ...client.konnektor.admin import get_card_terminals, get_mandants, get_pin_status_for_card, login
-from ...job import DiscoverLockedSmcbJob, SmcbVerifyJob
+from smcb_unlocker.worker.verify.smcb_verify_worker import SmcbVerifyWorker
+from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials
+from smcb_unlocker.client.konnektor.admin import get_card_terminals, get_mandants, get_pin_status_for_card, login
+from smcb_unlocker.job import DiscoverLockedSmcbJob, SmcbVerifyJob
 
 
 log = logging.getLogger(__name__)

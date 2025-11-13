@@ -1,3 +1,7 @@
+log_level: INFO
+discover_workers: 1
+verify_workers: 1
+
 konnektors:
   example:
     base_url: https://example.com:8500

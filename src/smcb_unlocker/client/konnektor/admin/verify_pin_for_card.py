@@ -1,7 +1,6 @@
 from httpx import AsyncClient
 
-
-from .model import PinStatus
+from smcb_unlocker.client.konnektor.admin.model import PinStatus
 
 
 async def verify_pin_for_card(client: AsyncClient, konnektor_base_url: str, auth: str, cardhandle: str, mandant_id: str, card_terminal_id: str) -> PinStatus:

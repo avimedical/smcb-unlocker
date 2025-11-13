@@ -4,11 +4,11 @@ from cryptography.hazmat.primitives import cmac
 from cryptography.hazmat.primitives.ciphers import algorithms
 from websockets.asyncio.client import ClientConnection
 
-from .authenticated import Authenticated
-from .state import State
-from .state_context import StateContext
-from .util import get_id, NOTIFY_CODES
-from ..model import AuthenticateRequest, AuthenticateResponse, AuthenticateResponsePayload, Header, Notify, WsModel
+from smcb_unlocker.client.kt.smcb.states.authenticated import Authenticated
+from smcb_unlocker.client.kt.smcb.states.state import State
+from smcb_unlocker.client.kt.smcb.states.state_context import StateContext
+from smcb_unlocker.client.kt.smcb.states.util import get_id, NOTIFY_CODES
+from smcb_unlocker.client.kt.smcb.model import AuthenticateRequest, AuthenticateResponse, AuthenticateResponsePayload, Header, Notify, WsModel
 
 
 log = logging.getLogger(__name__)

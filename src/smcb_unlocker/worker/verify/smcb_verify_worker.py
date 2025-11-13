@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
-from .konnektor_smcb_verifier import KonnektorSmcbVerifier
-from .kt_smcb_verifier import KtSmcbVerifier
-from ...config import ConfigCredentials, ConfigUserCredentials, ConfigPinCredentials
-from ...job import SmcbVerifyJob
+from smcb_unlocker.worker.verify.konnektor_smcb_verifier import KonnektorSmcbVerifier
+from smcb_unlocker.worker.verify.kt_smcb_verifier import KtSmcbVerifier
+from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials, ConfigPinCredentials
+from smcb_unlocker.job import SmcbVerifyJob
 
 
 log = logging.getLogger(__name__)

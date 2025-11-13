@@ -2,9 +2,9 @@ import logging
 
 from websockets.asyncio.client import ClientConnection
 
-from .state import State
-from .state_context import StateContext
-from ..model import WsModel
+from smcb_unlocker.client.kt.smcb.states.state import State
+from smcb_unlocker.client.kt.smcb.states.state_context import StateContext
+from smcb_unlocker.client.kt.smcb.model import WsModel
 
 
 log = logging.getLogger(__name__)

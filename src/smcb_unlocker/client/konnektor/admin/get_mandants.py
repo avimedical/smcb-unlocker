@@ -1,7 +1,7 @@
 from httpx import AsyncClient
 from pydantic import TypeAdapter
 
-from .model import Mandant
+from smcb_unlocker.client.konnektor.admin.model import Mandant
 
 
 async def get_mandants(client: AsyncClient, konnektor_base_url: str, auth: str) -> list[Mandant]:

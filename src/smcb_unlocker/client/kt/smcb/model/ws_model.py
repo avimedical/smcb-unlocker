@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
 
-from .authenticate_request import AuthenticateRequest
-from .authenticate_response import AuthenticateResponse
-from .input_pin_request import InputPinRequest
-from .input_pin_response import InputPinResponse
-from .notify import Notify
-from .output_request import OutputRequest
-from .output_response import OutputResponse
+from smcb_unlocker.client.kt.smcb.model.authenticate_request import AuthenticateRequest
+from smcb_unlocker.client.kt.smcb.model.authenticate_response import AuthenticateResponse
+from smcb_unlocker.client.kt.smcb.model.input_pin_request import InputPinRequest
+from smcb_unlocker.client.kt.smcb.model.input_pin_response import InputPinResponse
+from smcb_unlocker.client.kt.smcb.model.notify import Notify
+from smcb_unlocker.client.kt.smcb.model.output_request import OutputRequest
+from smcb_unlocker.client.kt.smcb.model.output_response import OutputResponse
 
 
 class WsModel(BaseModel):

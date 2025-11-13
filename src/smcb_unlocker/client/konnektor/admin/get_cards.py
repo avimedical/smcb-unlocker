@@ -1,8 +1,7 @@
 from httpx import AsyncClient
 from pydantic import TypeAdapter
 
-
-from .model import Card
+from smcb_unlocker.client.konnektor.admin.model import Card
 
 
 async def get_cards(client: AsyncClient, konnektor_base_url: str, auth: str) -> list[Card]:

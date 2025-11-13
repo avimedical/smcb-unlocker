@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
-
-from .card import Card
+from smcb_unlocker.client.konnektor.admin.model.card import Card
 
 
 class CardTerminalProductinformation(BaseModel):

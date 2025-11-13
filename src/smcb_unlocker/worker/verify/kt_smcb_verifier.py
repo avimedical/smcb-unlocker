@@ -4,10 +4,10 @@ import ssl
 
 from websockets.asyncio.client import connect
 
-from . import konnektor_smcb_verifier
-from ...client.kt.mgmt import get_api_version, login, logout, smcb_authentication
-from ...client.kt.smcb import StateMachine
-from ...client.kt.smcb.states import Authenticated
+from smcb_unlocker.worker.verify import konnektor_smcb_verifier
+from smcb_unlocker.client.kt.mgmt import get_api_version, login, logout, smcb_authentication
+from smcb_unlocker.client.kt.smcb import StateMachine
+from smcb_unlocker.client.kt.smcb.states import Authenticated
 
 
 SUPPORTED_API_VERSIONS = ["3.2"]
