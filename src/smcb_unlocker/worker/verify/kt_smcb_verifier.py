@@ -64,17 +64,17 @@ class KtSmcbVerifier:
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
 
-        async def on_state_change(old_state, new_state):
-            if isinstance(new_state, Authenticated):
-                self.kt_ready.set()
-
         async with connect(self.base_url, subprotocols=[WS_SMCB_PROTOCOL], ssl=ssl_context) as ws:
-            state_machine = StateMachine(ws, smcb_key, smcb_pin, on_state_change=on_state_change)
-            await state_machine.run()
+            state_machine = StateMachine(ws, smcb_key, smcb_pin)
+            async for state in state_machine.run():
+                if isinstance(state, Authenticated):
+                    self.kt_ready.set()
 
     async def run(self, smcb_pin: str) -> bool:
         self.ensure_connected()
 
         smcb_key = await self.get_smcb_key()
         await self.konnektor_ready.wait()
-        return await self.verify_smcb(smcb_key, smcb_pin)
+        result = await self.verify_smcb(smcb_key, smcb_pin)
+
+        return result
