@@ -4,7 +4,6 @@ import ssl
 
 from websockets.asyncio.client import connect
 
-from smcb_unlocker.worker.verify import konnektor_smcb_verifier
 from smcb_unlocker.client.kt.mgmt import get_api_version, login, logout, smcb_authentication
 from smcb_unlocker.client.kt.smcb import StateMachine
 from smcb_unlocker.client.kt.smcb.states import Authenticated
@@ -22,20 +21,18 @@ class KtSmcbVerifier:
     base_url: str
     mgmt_username: str
     mgmt_password: str
-    
-    kt_ready: asyncio.Event
+
     konnektor_ready: asyncio.Event
+    kt_ready: asyncio.Event
     
     def __init__(self, base_url: str, mgmt_username: str, mgmt_password: str):
         self.base_url = base_url
         self.mgmt_username = mgmt_username
         self.mgmt_password = mgmt_password
 
-    def connect(self, other: 'konnektor_smcb_verifier.KonnektorSmcbVerifier'):
-        self.kt_ready = asyncio.Event()
-        other.kt_ready = self.kt_ready
-        self.konnektor_ready = asyncio.Event()
-        other.konnektor_ready = self.konnektor_ready
+    def connect(self, konnektor_ready: asyncio.Event, kt_ready: asyncio.Event):
+        self.konnektor_ready = konnektor_ready
+        self.kt_ready = kt_ready
 
     def ensure_connected(self):
         if not self.kt_ready or not self.konnektor_ready:

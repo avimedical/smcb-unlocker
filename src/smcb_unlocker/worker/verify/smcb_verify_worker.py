@@ -38,6 +38,9 @@ class SmcbVerifyWorker:
         kt_creds = self.get_kt_credentials(job.kt_mac)
         smcb_creds = self.get_smcb_credentials(job.smcb_iccsn)
         
+        konnektor_ready = asyncio.Event()
+        kt_ready = asyncio.Event()
+
         konnektor_verifier = KonnektorSmcbVerifier(
             base_url=job.konnektor_base_url,
             auth=job.konnektor_auth,
@@ -47,7 +50,9 @@ class SmcbVerifyWorker:
             mgmt_username=kt_creds.username,
             mgmt_password=kt_creds.password,
         )
-        konnektor_verifier.connect(kt_verifier)
+
+        konnektor_verifier.connect(konnektor_ready, kt_ready)
+        kt_verifier.connect(konnektor_ready, kt_ready)
 
         async with asyncio.TaskGroup() as tg:
             konnektor_task = tg.create_task(konnektor_verifier.run(job.smcb_cardhandle, job.mandant_id, job.kt_id))

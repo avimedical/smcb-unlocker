@@ -3,7 +3,6 @@ import logging
 
 import httpx
 
-from smcb_unlocker.worker.verify import kt_smcb_verifier
 from smcb_unlocker.client.konnektor.admin import get_pin_status_for_card, verify_pin_for_card
 from smcb_unlocker.client.konnektor.admin.model import PinStatus
 
@@ -22,11 +21,9 @@ class KonnektorSmcbVerifier:
         self.base_url = base_url
         self.auth = auth
 
-    def connect(self, other: 'kt_smcb_verifier.KtSmcbVerifier'):
-        self.konnektor_ready = asyncio.Event()
-        other.konnektor_ready = self.konnektor_ready
-        self.kt_ready = asyncio.Event()
-        other.kt_ready = self.kt_ready
+    def connect(self, konnektor_ready: asyncio.Event, kt_ready: asyncio.Event):
+        self.konnektor_ready = konnektor_ready
+        self.kt_ready = kt_ready
 
     def ensure_connected(self):
         if not self.konnektor_ready or not self.kt_ready:
