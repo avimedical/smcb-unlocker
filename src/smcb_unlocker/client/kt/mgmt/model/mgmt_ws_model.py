@@ -9,5 +9,5 @@ from smcb_unlocker.client.kt.mgmt.model.logout_response import LogoutResponse
 from smcb_unlocker.client.kt.mgmt.model.smcb_authentication_request import SmcbAuthenticationRequest
 from smcb_unlocker.client.kt.mgmt.model.smcb_authentication_response import SmcbAuthenticationResponse
 
-class MgmtWsModel(BaseModel):
+class WsModel(BaseModel):
     msg: GetApiVersionRequest | GetApiVersionResponse | LoginRequest | LoginResponse | LogoutRequest | LogoutResponse | SmcbAuthenticationRequest | SmcbAuthenticationResponse = Field(discriminator="payloadType")

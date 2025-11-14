@@ -33,7 +33,7 @@ class Authenticated(State):
         return self
     
 
-    async def handle_notify(self, notify: Notify) -> Authenticated:
+    async def handle_notify(self, notify: Notify) -> Drain:
         log.debug(f"NOTIFY {notify.Header.MsgId}: {notify.model_dump_json(exclude_none=True)}")
 
         if notify.Payload.Code != 0:

@@ -38,12 +38,17 @@ class KtSmcbVerifier:
         if not self.kt_ready or not self.konnektor_ready:
             raise RuntimeError("KtSmcbVerifier and KonnektorSmcbVerifier are not connected. Call 'connect' method first.")
 
-    async def get_smcb_key(self) -> str:
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
+    def get_ssl_context(self) -> ssl.SSLContext | None:
+        if self.base_url.startswith("wss://"):
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            return ssl_context
+        else:
+            return None
 
-        async with connect(self.base_url, subprotocols=[WS_MGMT_PROTOCOL], ssl=ssl_context) as ws:
+    async def get_smcb_key(self) -> str:
+        async with connect(self.base_url, subprotocols=[WS_MGMT_PROTOCOL], ssl=self.get_ssl_context()) as ws:
             api_version = await get_api_version(ws)
             if api_version not in SUPPORTED_API_VERSIONS:
                 log.warning(f"API version {api_version} not supported, supported versions are: {SUPPORTED_API_VERSIONS}")
@@ -57,15 +62,13 @@ class KtSmcbVerifier:
                 await logout(ws, session_id)
 
     async def verify_smcb(self, smcb_key: str, smcb_pin: str) -> bool:
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-
-        async with connect(self.base_url, subprotocols=[WS_SMCB_PROTOCOL], ssl=ssl_context) as ws:
+        async with connect(self.base_url, subprotocols=[WS_SMCB_PROTOCOL], ssl=self.get_ssl_context()) as ws:
             state_machine = StateMachine(ws, smcb_key, smcb_pin)
             async for state in state_machine.run():
                 if isinstance(state, Authenticated):
                     self.kt_ready.set()
+
+        return True
 
     async def run(self, smcb_pin: str) -> bool:
         self.ensure_connected()
