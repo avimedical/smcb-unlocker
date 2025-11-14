@@ -14,12 +14,21 @@ log = logging.getLogger(__name__)
 
 class SmcbVerifyWorker:
     credentials: ConfigCredentials
+    konnektor_verifier_factory: callable[[str, str], KonnektorSmcbVerifier]
+    kt_verifier_factory: callable[[str, str, str], KtSmcbVerifier]
 
     job_queue: asyncio.Queue[SmcbVerifyJob] | None
 
-    def __init__(self, credentials: ConfigCredentials):
+    def __init__(
+            self,
+            credentials: ConfigCredentials,
+            konnektor_verifier_factory: callable[[str, str], KonnektorSmcbVerifier] = KonnektorSmcbVerifier.of,
+            kt_verifier_factory: callable[[str, str, str], KtSmcbVerifier] = KtSmcbVerifier.of,
+        ):
         self.credentials = credentials
         self.job_queue = None
+        self.konnektor_verifier_factory = konnektor_verifier_factory
+        self.kt_verifier_factory = kt_verifier_factory
 
     def connectInput(self, job_queue: asyncio.Queue[SmcbVerifyJob]):
         self.job_queue = job_queue
@@ -41,11 +50,11 @@ class SmcbVerifyWorker:
         konnektor_ready = asyncio.Event()
         kt_ready = asyncio.Event()
 
-        konnektor_verifier = KonnektorSmcbVerifier(
+        konnektor_verifier = self.konnektor_verifier_factory(
             base_url=job.konnektor_base_url,
             auth=job.konnektor_auth,
         )
-        kt_verifier = KtSmcbVerifier(
+        kt_verifier = self.kt_verifier_factory(
             base_url=job.kt_base_url,
             mgmt_username=kt_creds.username,
             mgmt_password=kt_creds.password,

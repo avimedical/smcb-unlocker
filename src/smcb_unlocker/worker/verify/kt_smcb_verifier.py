@@ -30,6 +30,10 @@ class KtSmcbVerifier:
         self.mgmt_username = mgmt_username
         self.mgmt_password = mgmt_password
 
+    @staticmethod
+    def of(base_url: str, mgmt_username: str, mgmt_password: str) -> KtSmcbVerifier:
+        return KtSmcbVerifier(base_url, mgmt_username, mgmt_password)
+
     def connect(self, konnektor_ready: asyncio.Event, kt_ready: asyncio.Event):
         self.konnektor_ready = konnektor_ready
         self.kt_ready = kt_ready

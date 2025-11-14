@@ -21,6 +21,10 @@ class KonnektorSmcbVerifier:
         self.base_url = base_url
         self.auth = auth
 
+    @staticmethod
+    def of(base_url: str, auth: str) -> KonnektorSmcbVerifier:
+        return KonnektorSmcbVerifier(base_url, auth)
+
     def connect(self, konnektor_ready: asyncio.Event, kt_ready: asyncio.Event):
         self.konnektor_ready = konnektor_ready
         self.kt_ready = kt_ready
