@@ -2,13 +2,13 @@ from pydantic import BaseModel
 
 
 class MandantSmb(BaseModel):
-    activationCode: str | None
+    activationCode: str | None = None
     autoPin: bool
     autoPinVerificationEnabled: bool
-    commonName: str | None
+    commonName: str | None = None
     hsm: bool
     iccsn: str
-    telematikId: str | None
+    telematikId: str | None = None
 
 
 class Mandant(BaseModel):
@@ -17,4 +17,4 @@ class Mandant(BaseModel):
     managedSmbs: list[MandantSmb]
     mandantId: str
     remotePinCardTerminals: list[str]
-    validateTelematikId: bool
+    validateTelematikId: bool | None = None
