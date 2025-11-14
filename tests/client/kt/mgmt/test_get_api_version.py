@@ -1,6 +1,7 @@
 import websockets
 
-from smcb_unlocker.client.kt.mgmt import get_api_version, GetApiVersionRequest, GetApiVersionResponse, GetApiVersionResponsePayload, Header
+from smcb_unlocker.client.kt.mgmt import get_api_version
+from smcb_unlocker.client.kt.mgmt.model import GetApiVersionRequest, GetApiVersionResponse, GetApiVersionResponsePayload, Header
 
 async def test_get_api_version():
     async def server_handler(ws: websockets.ServerConnection):

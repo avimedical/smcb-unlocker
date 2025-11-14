@@ -1,6 +1,7 @@
 import websockets
 
-from smcb_unlocker.client.kt.mgmt import login, LoginRequest, LoginResponse, LoginResponsePayload, Header
+from smcb_unlocker.client.kt.mgmt import login
+from smcb_unlocker.client.kt.mgmt.model import LoginRequest, LoginResponse, LoginResponsePayload, Header
 
 async def test_login():
     async def server_handler(ws: websockets.ServerConnection):

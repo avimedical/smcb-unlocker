@@ -1,34 +1,12 @@
 import logging
-from typing import Literal
 
-from pydantic import BaseModel
 from websockets.asyncio.client import ClientConnection
 
-from smcb_unlocker.client.kt.mgmt.shared import get_id, Header
+from smcb_unlocker.client.kt.mgmt.model import SmcbAuthenticationRequest, SmcbAuthenticationRequestPayload, SmcbAuthenticationResponse, Header
+from smcb_unlocker.client.kt.mgmt.util import get_id
 
 
 log = logging.getLogger(__name__)
-
-
-class SmcbAuthenticationRequestPayload(BaseModel):
-    pass
-
-
-class SmcbAuthenticationRequest(BaseModel):
-    header: Header
-    payloadType: Literal["SmcbAuthenticationRequest"]
-    payload: SmcbAuthenticationRequestPayload
-
-
-class SmcbAuthenticationResponsePayload(BaseModel):
-    error: str | None = None
-    key: str | None = None
-
-
-class SmcbAuthenticationResponse(BaseModel):
-    header: Header
-    payloadType: Literal["SmcbAuthenticationResponse"]
-    payload: SmcbAuthenticationResponsePayload
 
 
 async def smcb_authentication(ws: ClientConnection, session_id: str) -> str:

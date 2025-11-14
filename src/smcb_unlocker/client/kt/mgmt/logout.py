@@ -1,33 +1,12 @@
 import logging
-from typing import Literal
 
-from pydantic import BaseModel
 from websockets.asyncio.client import ClientConnection
 
-from smcb_unlocker.client.kt.mgmt.shared import get_id, Header
+from smcb_unlocker.client.kt.mgmt.model import LogoutRequest, LogoutRequestPayload, LogoutResponse, Header
+from smcb_unlocker.client.kt.mgmt.util import get_id
 
 
 log = logging.getLogger(__name__)
-
-
-class LogoutRequestPayload(BaseModel):
-    pass
-
-
-class LogoutRequest(BaseModel):
-    header: Header
-    payloadType: Literal["LogoutRequest"]
-    payload: LogoutRequestPayload
-
-
-class LogoutResponsePayload(BaseModel):
-    pass
-
-
-class LogoutResponse(BaseModel):
-    header: Header
-    payloadType: Literal["LogoutResponse"]
-    payload: LogoutResponsePayload
 
 
 async def logout(ws: ClientConnection, session_id: str) -> None:

@@ -1,33 +1,12 @@
 import logging
-from typing import Literal
 
-from pydantic import BaseModel
 from websockets.asyncio.client import ClientConnection
 
-from smcb_unlocker.client.kt.mgmt.shared import get_id, Header
+from smcb_unlocker.client.kt.mgmt.model import GetApiVersionRequest, GetApiVersionRequestPayload, GetApiVersionResponse, Header
+from smcb_unlocker.client.kt.mgmt.util import get_id
 
 
 log = logging.getLogger(__name__)
-
-
-class GetApiVersionRequestPayload(BaseModel):
-    pass
-
-
-class GetApiVersionRequest(BaseModel):
-    header: Header
-    payloadType: Literal["GetApiVersionRequest"]
-    payload: GetApiVersionRequestPayload
-
-
-class GetApiVersionResponsePayload(BaseModel):
-    apiVersion: str
-
-
-class GetApiVersionResponse(BaseModel):
-    header: Header
-    payloadType: Literal["GetApiVersionResponse"]
-    payload: GetApiVersionResponsePayload
 
 
 async def get_api_version(ws: ClientConnection) -> str:

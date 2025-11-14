@@ -1,6 +1,7 @@
 import websockets
 
-from smcb_unlocker.client.kt.mgmt import smcb_authentication, SmcbAuthenticationRequest, SmcbAuthenticationResponse, SmcbAuthenticationResponsePayload, Header
+from smcb_unlocker.client.kt.mgmt import smcb_authentication
+from smcb_unlocker.client.kt.mgmt.model import SmcbAuthenticationRequest, SmcbAuthenticationResponse, SmcbAuthenticationResponsePayload, Header
 
 async def test_smcb_authentication():
     async def server_handler(ws: websockets.ServerConnection):

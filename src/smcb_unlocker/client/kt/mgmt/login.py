@@ -1,35 +1,12 @@
 import logging
-from typing import Literal
 
-from pydantic import BaseModel
 from websockets.asyncio.client import ClientConnection
 
-from smcb_unlocker.client.kt.mgmt.shared import get_id, Header
+from smcb_unlocker.client.kt.mgmt.model import LoginRequest, LoginRequestPayload, LoginResponse, Header
+from smcb_unlocker.client.kt.mgmt.util import get_id
 
 
 log = logging.getLogger(__name__)
-
-
-class LoginRequestPayload(BaseModel):
-    username: str
-    password: str
-
-
-class LoginRequest(BaseModel):
-    header: Header
-    payloadType: Literal["LoginRequest"]
-    payload: LoginRequestPayload
-
-
-class LoginResponsePayload(BaseModel):
-    error: str | None = None
-    sessionId: str | None = None
-
-
-class LoginResponse(BaseModel):
-    header: Header
-    payloadType: Literal["LoginResponse"]
-    payload: LoginResponsePayload
 
 
 async def login(ws: ClientConnection, username: str, password: str) -> str:

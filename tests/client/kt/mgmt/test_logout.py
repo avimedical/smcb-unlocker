@@ -1,6 +1,7 @@
 import websockets
 
-from smcb_unlocker.client.kt.mgmt import logout, LogoutRequest, LogoutResponse, LogoutResponsePayload, Header
+from smcb_unlocker.client.kt.mgmt import logout
+from smcb_unlocker.client.kt.mgmt.model import LogoutRequest, LogoutResponse, LogoutResponsePayload, Header
 
 async def test_logout():
     async def server_handler(ws: websockets.ServerConnection):
