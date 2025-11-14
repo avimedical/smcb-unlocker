@@ -27,6 +27,7 @@ class Config(BaseSettings):
 
     log_level: str = "INFO"
     sentry_dsn: str | None = None
+    sentry_environment: str | None = None
     sentry_monitor_slug_prefix: str | None = None
 
     discover_queue_size: int = 10

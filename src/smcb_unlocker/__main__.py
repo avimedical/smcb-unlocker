@@ -20,7 +20,7 @@ async def main():
     # Disable httpx INFO level logging to reduce noise
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
-    sentry_sdk.init(dsn=config.sentry_dsn)
+    sentry_sdk.init(dsn=config.sentry_dsn, environment=config.sentry_environment)
 
     discover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob] = asyncio.Queue(config.discover_queue_size)
     verify_job_queue: asyncio.Queue[SmcbVerifyJob] = asyncio.Queue(config.verify_queue_size)
