@@ -1,5 +1,5 @@
 on:
-  push:
+  pull_request:
     branches:
       - main
 
@@ -47,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.DOCKER_IMAGE }}:${{ github.run_number }}-release,${{ env.DOCKER_IMAGE }}:latest
+          tags: ${{ env.DOCKER_IMAGE }}:${{ github.run_number }},${{ env.DOCKER_IMAGE }}:latest-dev
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           context: .
