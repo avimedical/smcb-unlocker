@@ -18,12 +18,12 @@ class Card(BaseModel):
     cardTerminalMacAddress: str | None
     cardhandle: str
     commonName: str | None
-    expirationDate: int
+    expirationDate: int | None
     hasEccCert: bool
     hasRsaCert: bool
-    iccsn: str
+    iccsn: str | None
     insertTime: int
     slotNo: int
     telematikId: str | None
     type: str
-    version: CardVersion
+    version: CardVersion | None
