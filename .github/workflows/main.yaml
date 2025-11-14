@@ -51,3 +51,5 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
