@@ -1,12 +1,11 @@
 import asyncio
 import logging
 
-import sentry_sdk
-
 from smcb_unlocker.worker.verify.konnektor_smcb_verifier import KonnektorSmcbVerifier
 from smcb_unlocker.worker.verify.kt_smcb_verifier import KtSmcbVerifier
 from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials, ConfigPinCredentials
 from smcb_unlocker.job import SmcbVerifyJob
+from smcb_unlocker.sentry_checkins import SentryCheckins
 
 
 log = logging.getLogger(__name__)
@@ -16,6 +15,7 @@ class SmcbVerifyWorker:
     credentials: ConfigCredentials
     konnektor_verifier_factory: callable[[str, str], KonnektorSmcbVerifier]
     kt_verifier_factory: callable[[str, str, str], KtSmcbVerifier]
+    sentry_checkins: SentryCheckins | None
 
     job_queue: asyncio.Queue[SmcbVerifyJob] | None
 
@@ -24,11 +24,13 @@ class SmcbVerifyWorker:
             credentials: ConfigCredentials,
             konnektor_verifier_factory: callable[[str, str], KonnektorSmcbVerifier] = KonnektorSmcbVerifier.of,
             kt_verifier_factory: callable[[str, str, str], KtSmcbVerifier] = KtSmcbVerifier.of,
+            sentry_checkins: SentryCheckins | None = None,
         ):
         self.credentials = credentials
-        self.job_queue = None
         self.konnektor_verifier_factory = konnektor_verifier_factory
         self.kt_verifier_factory = kt_verifier_factory
+        self.sentry_checkins = sentry_checkins
+        self.job_queue = None
 
     def connectInput(self, job_queue: asyncio.Queue[SmcbVerifyJob]):
         self.job_queue = job_queue
@@ -76,10 +78,15 @@ class SmcbVerifyWorker:
 
             try:
                 log.info(f"START {job}")
+
                 await self.handle(job)
+
                 log.info(f"END {job}")
+                if self.sentry_checkins:
+                    self.sentry_checkins.ok(job)
             except Exception as e:
                 log.error(f"ERROR {job}: {e}")
-                sentry_sdk.capture_exception(e)
+                if self.sentry_checkins:
+                    self.sentry_checkins.error(job, e)
 
             self.job_queue.task_done()

@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 
 from pytest_httpx import HTTPXMock
 
@@ -291,7 +292,7 @@ async def test_discover_locked_smcb_worker_runs(httpx_mock: HTTPXMock):
     async with asyncio.TaskGroup() as tg:
         task = tg.create_task(worker.run())
         
-        await discover_queue.put(DiscoverLockedSmcbJob(konnektor_name="test", konnektor_base_url=base_url))
+        await discover_queue.put(DiscoverLockedSmcbJob(job_id=str(uuid.uuid4()), konnektor_name="test", konnektor_base_url=base_url))
         async with asyncio.timeout(1):
             verify_job = await verify_queue.get()
 
