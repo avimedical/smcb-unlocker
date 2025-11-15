@@ -1,7 +1,7 @@
 from dataclasses import dataclass, replace
 
 
-@dataclass
+@dataclass(frozen=True)
 class StateContext:
     smcb_key: str
     smcb_pin: str

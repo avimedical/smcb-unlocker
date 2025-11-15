@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 
 from pytest_mock import MockerFixture
 
@@ -32,6 +33,8 @@ async def test_smcb_verify_worker_runs(mocker: MockerFixture):
         task = tg.create_task(worker.run())
 
         job = SmcbVerifyJob(
+            job_id=str(uuid.uuid4()),
+            konnektor_name="test",
             konnektor_base_url="https://konnektor.test",
             konnektor_auth="Bearer testtoken",
             kt_id="KT-1",

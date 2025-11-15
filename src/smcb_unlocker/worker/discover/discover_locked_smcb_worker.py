@@ -1,12 +1,13 @@
 import asyncio
 import logging
+import uuid
 
 import httpx
-import sentry_sdk
 
 from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials
 from smcb_unlocker.client.konnektor.admin import get_card_terminals, get_mandants, get_pin_status_for_card, login
 from smcb_unlocker.job import DiscoverLockedSmcbJob, SmcbVerifyJob
+from smcb_unlocker.sentry_checkins import SentryCheckins
 
 
 log = logging.getLogger(__name__)
@@ -14,12 +15,14 @@ log = logging.getLogger(__name__)
 
 class DiscoverLockedSmcbWorker:
     credentials: ConfigCredentials
+    sentry_checkins: SentryCheckins | None
 
     discover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob] | None
     verify_job_queue: asyncio.Queue[SmcbVerifyJob] | None
 
-    def __init__(self, credentials: ConfigCredentials):
+    def __init__(self, credentials: ConfigCredentials, sentry_checkins: SentryCheckins | None = None):
         self.credentials = credentials
+        self.sentry_checkins = sentry_checkins
         self.discover_job_queue = None
         self.verify_job_queue = None
 
@@ -59,6 +62,8 @@ class DiscoverLockedSmcbWorker:
                     pin_status = await get_pin_status_for_card(client, discover_job.konnektor_base_url, auth, card.cardhandle, mandant.mandantId)
                     if pin_status.status == "VERIFIABLE":
                         verify_job = SmcbVerifyJob(
+                            job_id=str(uuid.uuid4()),
+                            konnektor_name=discover_job.konnektor_name,
                             konnektor_base_url=discover_job.konnektor_base_url,
                             konnektor_auth=auth,
                             kt_id=card_terminal.cardTerminalId,
@@ -68,6 +73,9 @@ class DiscoverLockedSmcbWorker:
                             smcb_cardhandle=card.cardhandle,
                             mandant_id=mandant.mandantId,
                         )
+                        if self.sentry_checkins:
+                            self.sentry_checkins.in_progress(verify_job)
+
                         await self.verify_job_queue.put(verify_job)  
 
     async def run(self):
@@ -77,10 +85,15 @@ class DiscoverLockedSmcbWorker:
             
             try:
                 log.info(f"START {discover_job}")
+                
                 await self.handle(discover_job)
+                
                 log.info(f"END {discover_job}")
+                if self.sentry_checkins:
+                    self.sentry_checkins.ok(discover_job)
             except Exception as e:
                 log.error(f"ERROR {discover_job}: {e}")
-                sentry_sdk.capture_exception(e)
+                if self.sentry_checkins:
+                    self.sentry_checkins.error(discover_job, e)
             
             self.discover_job_queue.task_done()
