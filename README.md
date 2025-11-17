@@ -66,9 +66,11 @@ Quick links to view logs with this configuration:
 
 ## Architecture
 
-The application is organized into three modules:
+The application is organized into modules:
 - `client/` contains the REST and Websocket implementations for the communication with the Konnektor and Cherry card terminals
 - `job/` contains data structure definitions for the job queues in the application
+- `logging/` contains the configuration for the simple and Google log formats
+- `pipeline/` contains the distinct pipelines for log exports, rebooting and SMC-B unlocking
 - `worker/` contains the core logic for the tasks of the application:
   - `worker/discover/` contains logic on identifying SMC-Bs that need to be unlocked
   - `worker/log/` contains logic on streaming Konnekor logs
@@ -76,7 +78,9 @@ The application is organized into three modules:
   - `worker/schedule/` contains scheduling logic, e.g. issuing a job every 60 seconds
   - `worker/verify/` contains logic for exeucting a PIN verification for an SMC-B card
 
-*Workers* are connected with queues to form a *pipeline*. Currently, there are three distinct pipelines in the application:
+*Workers* are connected with queues to form a *pipeline*.
+Each pipeline is executed in its own thread.
+Currently, there are three distinct pipelines in the application:
 
 ### SMC-B Unlocking Pipeline
 
