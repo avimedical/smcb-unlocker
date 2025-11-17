@@ -1,6 +1,6 @@
 import asyncio
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import logging
 
 import httpx
@@ -55,7 +55,10 @@ class LogExportWorker:
                 log.log(protocol_severity, protocol.message, extra={ "job": job, "protocol": protocol })
 
                 if protocol_dt > self.last_ts_map[job.konnektor_name]:
-                    self.last_ts_map[job.konnektor_name] = protocol_dt
+                    # Round up to the next second because the Konnektor protocol entries have millisecond precision,
+                    # but the query parameters in the API only have second precision. Without this, we could end up
+                    # flooring the timestamp with int() and re-fetching the same entries again.
+                    self.last_ts_map[job.konnektor_name] = (protocol_dt + timedelta(seconds=1)).replace(microsecond=0)
 
     async def run(self):
         self.ensure_connected()
