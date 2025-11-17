@@ -1,0 +1,7 @@
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class RebootJob:
+    job_id: str
+    konnektor_name: str
+    konnektor_base_url: str

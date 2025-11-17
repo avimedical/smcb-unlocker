@@ -9,10 +9,11 @@ import sentry_sdk
 
 from smcb_unlocker.client.konnektor.admin.model import ProtocolEntry
 from smcb_unlocker.config import Config
-from smcb_unlocker.job import DiscoverLockedSmcbJob, LogExportJob, SmcbVerifyJob
+from smcb_unlocker.job import DiscoverLockedSmcbJob, LogExportJob, RebootJob, SmcbVerifyJob
 from smcb_unlocker.sentry_checkins import SentryCheckins
 from smcb_unlocker.worker.discover.discover_locked_smcb_worker import DiscoverLockedSmcbWorker
-from smcb_unlocker.worker.schedule.job_interval_scheduler import JobIntervalScheduler
+from smcb_unlocker.worker.reboot import RebootWorker
+from smcb_unlocker.worker.schedule import JobCronScheduler, JobIntervalScheduler
 from smcb_unlocker.worker.log.log_export_worker import LogExportWorker
 from smcb_unlocker.worker.verify.smcb_verify_worker import SmcbVerifyWorker
 
@@ -115,6 +116,26 @@ async def main():
     for log_export_worker in log_export_workers:
         log_export_worker.connectInput(log_export_job_queue)
 
+    # Reboot pipeline
+
+    reboot_job_queue: asyncio.Queue[RebootJob] = asyncio.Queue(config.reboot_queue_size)
+    reboot_schedule_workers: list[JobCronScheduler[RebootJob]] = [
+        JobCronScheduler(
+            lambda: RebootJob(str(uuid.uuid4()), konnektor_name, konnektor_config.base_url),
+            cron_expression=konnektor_config.reboot_cron,
+            sentry_checkins=sentry_checkins
+        )
+        for konnektor_name, konnektor_config in config.konnektors.items() if konnektor_config.reboot_cron
+    ]
+    reboot_workers = [
+        RebootWorker(config.credentials, sentry_checkins=sentry_checkins)
+        for _ in range(config.reboot_workers)
+    ]
+    for scheduler in reboot_schedule_workers:
+        scheduler.connectOutput(reboot_job_queue)
+    for reboot_worker in reboot_workers:
+        reboot_worker.connectInput(reboot_job_queue)
+
     async with asyncio.TaskGroup() as tg:
         if sentry_checkins:
             tg.create_task(sentry_checkins.cleanup_orphaned_checkins())
@@ -130,6 +151,11 @@ async def main():
             tg.create_task(scheduler.run())
         for log_export_worker in log_export_workers:
             tg.create_task(log_export_worker.run())
+
+        for scheduler in reboot_schedule_workers:
+            tg.create_task(scheduler.run())
+        for reboot_worker in reboot_workers:
+            tg.create_task(reboot_worker.run())
 
 
 if __name__ == "__main__":

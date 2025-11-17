@@ -8,6 +8,7 @@ class ConfigKonnektor(BaseModel):
     base_url: str
     interval: int
     log_export_interval: int = 60
+    reboot_cron: str | None = None
 
 
 class ConfigUserCredentials(BaseModel):
@@ -40,6 +41,8 @@ class Config(BaseSettings):
     verify_workers: int = 1
     log_export_queue_size: int = 10
     log_export_workers: int = 1
+    reboot_queue_size: int = 10
+    reboot_workers: int = 1
     
     konnektors: dict[str, ConfigKonnektor]
     credentials: ConfigCredentials
