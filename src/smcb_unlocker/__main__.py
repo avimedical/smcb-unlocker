@@ -7,6 +7,7 @@ import uuid
 from google.cloud.logging.handlers import StructuredLogHandler
 import sentry_sdk
 
+from smcb_unlocker.client.konnektor.admin.model import ProtocolEntry
 from smcb_unlocker.config import Config
 from smcb_unlocker.job import DiscoverLockedSmcbJob, LogExportJob, SmcbVerifyJob
 from smcb_unlocker.sentry_checkins import SentryCheckins
@@ -30,6 +31,12 @@ class GoogleCloudLoggingJsonFieldsFilter(logging.Filter):
                 json_fields["job"] = job_dict
             else:
                 json_fields["job"] = str(record.job)
+
+        if hasattr(record, "protocol"):
+            if isinstance(record.protocol, ProtocolEntry):
+                json_fields["protocol"] = record.protocol.model_dump()
+            else:
+                json_fields["protocol"] = str(record.protocol)
 
         record.json_fields = json_fields
         return super().filter(record)
