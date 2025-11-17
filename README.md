@@ -41,10 +41,28 @@ It will use the credentials `super:konnektor` for the Konnektor, `admin:87654321
 
 The application also supports the use of default fallback credentials for Konnektors, card terminals and SMC-Bs: If the key `_default` is given instead of a Konnektor name, card terminal MAC or SMC-B ICCSN, the given credentials will be used as a fallback.
 
-## References
+## Structured Logging
 
-- [Cherry ST-1506 Remote Management Specification](./docs/reference/ST-1506-remote-management-specification_Remote-management-specification_v2.8_94a8c5b.pdf): Remote Management and SMC-B verification websocket reference
-- [Secunet Highspeedkonnektor Bedienungsanleitung](./docs/reference/hsk-bedienungsanleitung-2.0.pdf): Documentation on ports and the Konnektor configuration through the management frontend. The API calls have been reverse engineered based on the management frontend.
+The deployments of `smcb-unlocker` in Google Cloud make use of structured JSON logs in Google Cloud Logging.
+While this makes the log output easily filterable, the default log view in Google Cloud may be very uninformative and look similar to this:
+
+```
+INFO 2025-11-17T19:18:25.936254552Z [smcb-unlocker] Start job
+INFO 2025-11-17T19:18:26.575166799Z [smcb-unlocker] End job
+```
+
+The recommended way to view combined logs of the application in Google Cloud Logging is to configure the following fields in **Preferences > Manage summary fields**:
+- `jsonPayload.job.konnektorName`
+- `jsonPayload.job.type`
+- `jsonPayload.job.jobId`
+
+Quick links to view logs with this configuration:
+- [Combined](https://console.cloud.google.com/logs/query;duration=PT1H;query=resource.type%3D%22k8s_container%22%0Alabels.%22k8s-pod%2Fapp_kubernetes_io%2Fname%22%3D%22smcb-unlocker%22%0A;summaryFields=jsonPayload%252Fjob%252Fkonnektor_name,jsonPayload%252Fjob%252Ftype,jsonPayload%252Fjob%252Fjob_id:false:32:beginning?project=prod-sha-prj-shared-1)
+- [DiscoverLockedSmcbJob](https://console.cloud.google.com/logs/query;duration=PT1H;query=resource.type%3D%22k8s_container%22%0Alabels.%22k8s-pod%2Fapp_kubernetes_io%2Fname%22%3D%22smcb-unlocker%22%0AjsonPayload.job.type%3D%22DiscoverLockedSmcbJob%22;summaryFields=jsonPayload%252Fjob%252Fkonnektor_name,jsonPayload%252Fjob%252Ftype,jsonPayload%252Fjob%252Fjob_id:false:32:beginning?project=prod-sha-prj-shared-1)
+- [VerifySmcbJob](https://console.cloud.google.com/logs/query;duration=PT1H;query=resource.type%3D%22k8s_container%22%0Alabels.%22k8s-pod%2Fapp_kubernetes_io%2Fname%22%3D%22smcb-unlocker%22%0AjsonPayload.job.type%3D%22SmcbVerifyJob%22;summaryFields=jsonPayload%252Fjob%252Fkonnektor_name,jsonPayload%252Fjob%252Ftype,jsonPayload%252Fjob%252Fjob_id:false:32:beginning?project=prod-sha-prj-shared-1)
+- [RebootJob](https://console.cloud.google.com/logs/query;duration=PT1H;query=resource.type%3D%22k8s_container%22%0Alabels.%22k8s-pod%2Fapp_kubernetes_io%2Fname%22%3D%22smcb-unlocker%22%0AjsonPayload.job.type%3D%22RebootJob%22;summaryFields=jsonPayload%252Fjob%252Fkonnektor_name,jsonPayload%252Fjob%252Ftype,jsonPayload%252Fjob%252Fjob_id:false:32:beginning?project=prod-sha-prj-shared-1)
+- [LogExportJob](https://console.cloud.google.com/logs/query;duration=PT1H;query=resource.type%3D%22k8s_container%22%0Alabels.%22k8s-pod%2Fapp_kubernetes_io%2Fname%22%3D%22smcb-unlocker%22%0AjsonPayload.job.type%3D%22LogExportJob%22%0AjsonPayload.protocol.type%3D%22OP%22;summaryFields=jsonPayload%252Fjob%252Fkonnektor_name,jsonPayload%252Fprotocol%252Ftype,jsonPayload%252Fprotocol%252Ftimestamp:false:32:beginning?project=prod-sha-prj-shared-1)
+
 
 ## Architecture
 
@@ -81,3 +99,8 @@ flowchart LR
 flowchart LR
   JobCronScheduler -- RebootJob --> RebootWorker
 ```
+
+## References
+
+- [Cherry ST-1506 Remote Management Specification](./docs/reference/ST-1506-remote-management-specification_Remote-management-specification_v2.8_94a8c5b.pdf): Remote Management and SMC-B verification websocket reference
+- [Secunet Highspeedkonnektor Bedienungsanleitung](./docs/reference/hsk-bedienungsanleitung-2.0.pdf): Documentation on ports and the Konnektor configuration through the management frontend. The API calls have been reverse engineered based on the management frontend.
