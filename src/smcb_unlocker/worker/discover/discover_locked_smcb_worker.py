@@ -84,16 +84,16 @@ class DiscoverLockedSmcbWorker:
             discover_job = await self.discover_job_queue.get()
             
             try:
-                log.info(f"START {discover_job}")
+                log.info(f"Start job", extra={ "job": discover_job })
                 
                 await self.handle(discover_job)
                 
-                log.info(f"END {discover_job}")
+                log.info(f"End job", extra={ "job": discover_job })
                 if self.sentry_checkins:
                     self.sentry_checkins.ok(discover_job)
             except Exception as e:
-                log.error(f"ERROR {discover_job}: {e}")
+                log.exception(f"Error during job", extra={ "job": discover_job })
                 if self.sentry_checkins:
-                    self.sentry_checkins.error(discover_job, e)
+                    self.sentry_checkins.error(discover_job)
             
             self.discover_job_queue.task_done()

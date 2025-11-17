@@ -77,16 +77,16 @@ class SmcbVerifyWorker:
             job = await self.job_queue.get()
 
             try:
-                log.info(f"START {job}")
+                log.info(f"Start job", extra={"job": job})
 
                 await self.handle(job)
 
-                log.info(f"END {job}")
+                log.info(f"End job", extra={"job": job})
                 if self.sentry_checkins:
                     self.sentry_checkins.ok(job)
             except Exception as e:
-                log.error(f"ERROR {job}: {e}")
+                log.exception(f"Error during job", extra={"job": job})
                 if self.sentry_checkins:
-                    self.sentry_checkins.error(job, e)
+                    self.sentry_checkins.error(job)
 
             self.job_queue.task_done()
