@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, YamlConfigSettingsSource
 
@@ -5,6 +7,7 @@ from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, Settings
 class ConfigKonnektor(BaseModel):
     base_url: str
     interval: int
+    log_export_interval: int = 60
 
 
 class ConfigUserCredentials(BaseModel):
@@ -26,6 +29,7 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(yaml_file=['config.yaml'])
 
     log_level: str = "INFO"
+    log_format: Literal["simple", "google"] = "simple"
     sentry_dsn: str | None = None
     sentry_environment: str | None = None
     sentry_monitor_slug_prefix: str | None = None
@@ -34,6 +38,8 @@ class Config(BaseSettings):
     discover_workers: int = 1
     verify_queue_size: int = 10
     verify_workers: int = 1
+    log_export_queue_size: int = 10
+    log_export_workers: int = 1
     
     konnektors: dict[str, ConfigKonnektor]
     credentials: ConfigCredentials

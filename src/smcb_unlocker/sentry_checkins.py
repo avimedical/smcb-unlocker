@@ -7,7 +7,7 @@ from sentry_sdk import capture_exception
 from sentry_sdk.crons import capture_checkin
 from sentry_sdk.crons.consts import MonitorStatus
 
-from smcb_unlocker.job import DiscoverLockedSmcbJob, SmcbVerifyJob
+from smcb_unlocker.job import DiscoverLockedSmcbJob, LogExportJob, SmcbVerifyJob
 
 
 ORPHANED_CHECKIN_TIMEOUT = timedelta(minutes=30)
@@ -34,15 +34,17 @@ class SentryCheckins:
         self.monitor_slug_prefix = monitor_slug_prefix
         self.checkins = {}
 
-    def get_monitor_slug(self, job: DiscoverLockedSmcbJob | SmcbVerifyJob) -> str:
+    def get_monitor_slug(self, job: DiscoverLockedSmcbJob | LogExportJob | SmcbVerifyJob) -> str:
         if isinstance(job, DiscoverLockedSmcbJob):
             return f"{self.monitor_slug_prefix}-discover-{job.konnektor_name}"
+        elif isinstance(job, LogExportJob):
+            return f"{self.monitor_slug_prefix}-log-{job.konnektor_name}"
         elif isinstance(job, SmcbVerifyJob):
             return f"{self.monitor_slug_prefix}-verify-{job.konnektor_name}"
         else:
             raise ValueError("Unsupported job type for SentryCheckins")
 
-    def in_progress(self, job: DiscoverLockedSmcbJob | SmcbVerifyJob):
+    def in_progress(self, job: DiscoverLockedSmcbJob | LogExportJob | SmcbVerifyJob):
         monitor_slug = self.get_monitor_slug(job)
         check_in_id = capture_checkin(monitor_slug, status=MonitorStatus.IN_PROGRESS)
         
@@ -50,7 +52,7 @@ class SentryCheckins:
         value = SentryCheckinValue(datetime.now(), check_in_id)
         self.checkins[key] = value
 
-    def ok(self, job: DiscoverLockedSmcbJob | SmcbVerifyJob):
+    def ok(self, job: DiscoverLockedSmcbJob | LogExportJob | SmcbVerifyJob):
         monitor_slug = self.get_monitor_slug(job)
         key = SentryCheckinKey(monitor_slug, job.job_id)
         value = self.checkins.pop(key, None)
@@ -64,16 +66,13 @@ class SentryCheckins:
             duration=(datetime.now() - value.started_at).total_seconds(),
         )
 
-    def error(self, job: DiscoverLockedSmcbJob | SmcbVerifyJob, error: Exception | None = None):
-        if error:
-            capture_exception(error)
-
+    def error(self, job: DiscoverLockedSmcbJob | LogExportJob | SmcbVerifyJob):
         monitor_slug = self.get_monitor_slug(job)
         key = SentryCheckinKey(monitor_slug, job.job_id)
         value = self.checkins.pop(key, None)
         if not value:
             return
-        
+
         capture_checkin(
             monitor_slug,
             check_in_id=value.check_in_id,
