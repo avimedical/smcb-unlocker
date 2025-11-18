@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 import uuid
 
 from smcb_unlocker.config import Config
@@ -21,7 +22,7 @@ class SmcbUnlockPipeline:
         
         discover_schedule_workers: list[JobIntervalScheduler[DiscoverLockedSmcbJob]] = [
             JobIntervalScheduler(
-                lambda: DiscoverLockedSmcbJob(str(uuid.uuid4()), konnektor_name, konnektor_config.base_url),
+                partial(DiscoverLockedSmcbJob, job_id=str(uuid.uuid4()), konnektor_name=konnektor_name, konnektor_base_url=konnektor_config.base_url),
                 interval=konnektor_config.interval,
                 sentry_checkins=sentry_checkins
             )

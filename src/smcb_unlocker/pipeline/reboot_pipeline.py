@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 import uuid
 
 from smcb_unlocker.config import Config
@@ -19,7 +20,7 @@ class RebootPipeline:
         job_queue: asyncio.Queue[RebootJob] = asyncio.Queue(self.config.reboot_queue_size)
         schedulers: list[JobCronScheduler[RebootJob]] = [
             JobCronScheduler(
-                lambda: RebootJob(str(uuid.uuid4()), konnektor_name, konnektor_config.base_url),
+                partial(RebootJob, job_id=str(uuid.uuid4()), konnektor_name=konnektor_name, konnektor_base_url=konnektor_config.base_url),
                 cron_expression=konnektor_config.reboot_cron,
                 sentry_checkins=sentry_checkins
             )
