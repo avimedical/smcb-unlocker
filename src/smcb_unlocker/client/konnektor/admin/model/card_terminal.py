@@ -45,5 +45,5 @@ class CardTerminal(BaseModel):
     renewPairingNeeded: bool
     slotCount: int
     slotInfos: list[Card]
-    userRole: str
+    userRole: str | None
     validSicctVersion: bool

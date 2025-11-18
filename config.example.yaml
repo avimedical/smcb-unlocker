@@ -1,7 +1,7 @@
 log_level: INFO
 sentry_dsn: null
 sentry_environment: example
-sentry_monitor_slug_prefix: smcb-unlocker-discover
+sentry_monitor_slug_prefix: smcb-unlocker
 
 discover_queue_size: 10
 discover_workers: 1
