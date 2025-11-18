@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 import uuid
 
 from smcb_unlocker.config import Config
@@ -19,7 +20,7 @@ class LogExportPipeline:
         job_queue: asyncio.Queue[LogExportJob] = asyncio.Queue(self.config.log_export_queue_size)
         schedulers: list[JobIntervalScheduler[LogExportJob]] = [
             JobIntervalScheduler(
-                lambda: LogExportJob(str(uuid.uuid4()), konnektor_name, konnektor_config.base_url),
+                partial(LogExportJob, job_id=str(uuid.uuid4()), konnektor_name=konnektor_name, konnektor_base_url=konnektor_config.base_url),
                 interval=konnektor_config.log_export_interval,
                 sentry_checkins=sentry_checkins
             )
