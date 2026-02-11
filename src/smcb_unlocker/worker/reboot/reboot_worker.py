@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import logging
 
 import httpx
+import sentry_sdk
 
 from smcb_unlocker.client.konnektor.admin import login, ping, reboot
 from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials
@@ -82,8 +83,13 @@ class RebootWorker:
                 log.info(f"End job", extra={"job": job})
                 if self.sentry_checkins:
                     self.sentry_checkins.ok(job)
+            except (httpx.ConnectError, httpx.ConnectTimeout) as e:
+                log.warning("Konnektor unreachable: %s", e, extra={"job": job})
+                if self.sentry_checkins:
+                    self.sentry_checkins.error(job)
             except Exception as e:
-                log.exception(f"Error during job", extra={"job": job})
+                log.exception("Error during job", extra={"job": job})
+                sentry_sdk.capture_exception(e)
                 if self.sentry_checkins:
                     self.sentry_checkins.error(job)
 

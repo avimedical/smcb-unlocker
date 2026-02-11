@@ -3,6 +3,7 @@ import logging
 import uuid
 
 import httpx
+import sentry_sdk
 
 from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials
 from smcb_unlocker.client.konnektor.admin import get_card_terminals, get_mandants, get_pin_status_for_card, login
@@ -91,9 +92,14 @@ class DiscoverLockedSmcbWorker:
                 log.info(f"End job", extra={ "job": discover_job })
                 if self.sentry_checkins:
                     self.sentry_checkins.ok(discover_job)
-            except Exception as e:
-                log.exception(f"Error during job", extra={ "job": discover_job })
+            except (httpx.ConnectError, httpx.ConnectTimeout) as e:
+                log.warning("Konnektor unreachable: %s", e, extra={"job": discover_job})
                 if self.sentry_checkins:
                     self.sentry_checkins.error(discover_job)
-            
+            except Exception as e:
+                log.exception("Error during job", extra={"job": discover_job})
+                sentry_sdk.capture_exception(e)
+                if self.sentry_checkins:
+                    self.sentry_checkins.error(discover_job)
+
             self.discover_job_queue.task_done()
