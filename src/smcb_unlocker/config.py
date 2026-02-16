@@ -35,6 +35,8 @@ class Config(BaseSettings):
     sentry_environment: str | None = None
     sentry_monitor_slug_prefix: str | None = None
 
+    httpx_timeout: float = 30.0
+
     discover_queue_size: int = 10
     discover_workers: int = 1
     verify_queue_size: int = 10

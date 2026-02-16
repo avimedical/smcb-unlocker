@@ -30,6 +30,7 @@ def main():
     sentry_sdk.init(
         dsn=config.sentry_dsn,
         environment=config.sentry_environment,
+        release=config.sentry_release,
         integrations=[
             LoggingIntegration(
                 level=logging.WARNING,       # breadcrumbs from WARNING+
