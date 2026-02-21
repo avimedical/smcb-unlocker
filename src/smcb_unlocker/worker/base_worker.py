@@ -6,6 +6,7 @@ from typing import TypeVar, Generic
 import httpx
 import sentry_sdk
 
+from smcb_unlocker.client.konnektor.errors import KonnektorError
 from smcb_unlocker.sentry_checkins import SentryCheckins
 
 
@@ -41,7 +42,7 @@ class BaseWorker(ABC, Generic[T]):
                 log.info("End job", extra={"job": job})
                 if self.sentry_checkins:
                     self.sentry_checkins.ok(job)
-            except (httpx.TimeoutException, httpx.NetworkError) as e:
+            except (httpx.TimeoutException, httpx.NetworkError, KonnektorError) as e:
                 log.warning("Konnektor unreachable: %s", e, extra={"job": job})
                 if self.sentry_checkins:
                     self.sentry_checkins.error(job)
