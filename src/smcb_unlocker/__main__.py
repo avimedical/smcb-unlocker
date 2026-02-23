@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import logging
+import os
 
 import sentry_sdk
 from sentry_sdk.integrations.logging import LoggingIntegration
@@ -30,7 +31,7 @@ def main():
     sentry_sdk.init(
         dsn=config.sentry_dsn,
         environment=config.sentry_environment,
-        release=config.sentry_release,
+        release=config.sentry_release or os.environ.get("SENTRY_RELEASE"),
         integrations=[
             LoggingIntegration(
                 level=logging.WARNING,       # breadcrumbs from WARNING+

@@ -33,6 +33,7 @@ class Config(BaseSettings):
     log_format: Literal["simple", "google"] = "simple"
     sentry_dsn: str | None = None
     sentry_environment: str | None = None
+    sentry_release: str | None = None
     sentry_monitor_slug_prefix: str | None = None
 
     httpx_timeout: float = 30.0
