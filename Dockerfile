@@ -19,6 +19,8 @@ RUN poetry install --only main --no-root
 # Runtime stage
 FROM python:3.14-slim
 
+ARG GIT_SHA
+ENV SENTRY_RELEASE=${GIT_SHA}
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
