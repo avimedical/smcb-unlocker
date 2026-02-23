@@ -27,7 +27,7 @@ class LogExportPipeline:
             for konnektor_name, konnektor_config in self.config.konnektors.items()
         ]
         workers = [
-            LogExportWorker(self.config.credentials, sentry_checkins=sentry_checkins)
+            LogExportWorker(self.config.credentials, timeout=self.config.httpx_timeout, sentry_checkins=sentry_checkins)
             for _ in range(self.config.log_export_workers)
         ]
         

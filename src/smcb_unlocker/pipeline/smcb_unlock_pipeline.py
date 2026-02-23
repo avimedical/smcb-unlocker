@@ -29,7 +29,7 @@ class SmcbUnlockPipeline:
             for konnektor_name, konnektor_config in self.config.konnektors.items()
         ]
         discover_workers = [
-            DiscoverLockedSmcbWorker(self.config.credentials, sentry_checkins=sentry_checkins)
+            DiscoverLockedSmcbWorker(self.config.credentials, timeout=self.config.httpx_timeout, sentry_checkins=sentry_checkins)
             for _ in range(self.config.discover_workers)
         ]
         verify_workers = [

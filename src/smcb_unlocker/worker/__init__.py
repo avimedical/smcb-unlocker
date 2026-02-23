@@ -1,3 +1,4 @@
+from smcb_unlocker.worker.base_worker import *
 from smcb_unlocker.worker.discover import *
 from smcb_unlocker.worker.log import *
 from smcb_unlocker.worker.reboot import *

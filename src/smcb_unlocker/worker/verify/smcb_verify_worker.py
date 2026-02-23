@@ -6,18 +6,16 @@ from smcb_unlocker.worker.verify.kt_smcb_verifier import KtSmcbVerifier
 from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials, ConfigPinCredentials
 from smcb_unlocker.job import SmcbVerifyJob
 from smcb_unlocker.sentry_checkins import SentryCheckins
+from smcb_unlocker.worker.base_worker import BaseWorker
 
 
 log = logging.getLogger(__name__)
 
 
-class SmcbVerifyWorker:
+class SmcbVerifyWorker(BaseWorker[SmcbVerifyJob]):
     credentials: ConfigCredentials
     konnektor_verifier_factory: callable[[str, str], KonnektorSmcbVerifier]
     kt_verifier_factory: callable[[str, str, str], KtSmcbVerifier]
-    sentry_checkins: SentryCheckins | None
-
-    job_queue: asyncio.Queue[SmcbVerifyJob] | None
 
     def __init__(
             self,
@@ -26,29 +24,24 @@ class SmcbVerifyWorker:
             kt_verifier_factory: callable[[str, str, str], KtSmcbVerifier] = KtSmcbVerifier.of,
             sentry_checkins: SentryCheckins | None = None,
         ):
+        super().__init__(sentry_checkins=sentry_checkins)
         self.credentials = credentials
         self.konnektor_verifier_factory = konnektor_verifier_factory
         self.kt_verifier_factory = kt_verifier_factory
-        self.sentry_checkins = sentry_checkins
-        self.job_queue = None
 
     def connectInput(self, job_queue: asyncio.Queue[SmcbVerifyJob]):
-        self.job_queue = job_queue
+        self.connect_job_queue(job_queue)
 
-    def ensure_connected(self):
-        if not self.job_queue:
-            raise RuntimeError("SmcbVerifyWorker is not connected. Call 'connect' method on DiscoverLockedSmcbWorker first.")
-        
     def get_kt_credentials(self, kt_mac: str) -> ConfigUserCredentials:
         return self.credentials.kt.get(kt_mac, self.credentials.kt['_default'])
-    
+
     def get_smcb_credentials(self, smcb_iccsn: str) -> ConfigPinCredentials:
         return self.credentials.smcb.get(smcb_iccsn, self.credentials.smcb['_default'])
 
     async def handle(self, job: SmcbVerifyJob):
         kt_creds = self.get_kt_credentials(job.kt_mac)
         smcb_creds = self.get_smcb_credentials(job.smcb_iccsn)
-        
+
         konnektor_ready = asyncio.Event()
         kt_ready = asyncio.Event()
 
@@ -70,23 +63,3 @@ class SmcbVerifyWorker:
             kt_task = tg.create_task(kt_verifier.run(smcb_creds.pin))
 
         return konnektor_task.result(), kt_task.result()
-
-    async def run(self):
-        self.ensure_connected()
-        while True:
-            job = await self.job_queue.get()
-
-            try:
-                log.info(f"Start job", extra={"job": job})
-
-                await self.handle(job)
-
-                log.info(f"End job", extra={"job": job})
-                if self.sentry_checkins:
-                    self.sentry_checkins.ok(job)
-            except Exception as e:
-                log.exception(f"Error during job", extra={"job": job})
-                if self.sentry_checkins:
-                    self.sentry_checkins.error(job)
-
-            self.job_queue.task_done()

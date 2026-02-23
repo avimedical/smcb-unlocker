@@ -8,39 +8,39 @@ from smcb_unlocker.config import ConfigCredentials, ConfigUserCredentials
 from smcb_unlocker.client.konnektor.admin import get_card_terminals, get_mandants, get_pin_status_for_card, login
 from smcb_unlocker.job import DiscoverLockedSmcbJob, SmcbVerifyJob
 from smcb_unlocker.sentry_checkins import SentryCheckins
+from smcb_unlocker.worker.base_worker import BaseWorker
 
 
 log = logging.getLogger(__name__)
 
 
-class DiscoverLockedSmcbWorker:
+class DiscoverLockedSmcbWorker(BaseWorker[DiscoverLockedSmcbJob]):
     credentials: ConfigCredentials
-    sentry_checkins: SentryCheckins | None
-
-    discover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob] | None
     verify_job_queue: asyncio.Queue[SmcbVerifyJob] | None
+    timeout: float
 
-    def __init__(self, credentials: ConfigCredentials, sentry_checkins: SentryCheckins | None = None):
+    def __init__(self, credentials: ConfigCredentials, timeout: float = 30.0, sentry_checkins: SentryCheckins | None = None):
+        super().__init__(sentry_checkins=sentry_checkins)
         self.credentials = credentials
-        self.sentry_checkins = sentry_checkins
-        self.discover_job_queue = None
+        self.timeout = timeout
         self.verify_job_queue = None
 
-    def connectInput(self, disover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob]):
-        self.discover_job_queue = disover_job_queue
+    def connectInput(self, discover_job_queue: asyncio.Queue[DiscoverLockedSmcbJob]):
+        self.connect_job_queue(discover_job_queue)
 
     def connectOutput(self, verify_job_queue: asyncio.Queue[SmcbVerifyJob]):
         self.verify_job_queue = verify_job_queue
 
-    def ensure_connected(self):
-        if not self.discover_job_queue or not self.verify_job_queue:
-            raise RuntimeError("DiscoverLockedSmcbWorker is not connected. Call 'connect*' methods first.")
-        
+    async def run(self):
+        if not self.verify_job_queue:
+            raise RuntimeError("DiscoverLockedSmcbWorker is not connected. Call 'connectOutput' first.")
+        await super().run()
+
     def get_credentials(self, konnektor_name: str) -> ConfigUserCredentials:
         return self.credentials.konnektors.get(konnektor_name, self.credentials.konnektors.get('_default'))
 
     async def handle(self, discover_job: DiscoverLockedSmcbJob):
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=False, timeout=httpx.Timeout(self.timeout)) as client:
             creds = self.get_credentials(discover_job.konnektor_name)
             auth = await login(client, discover_job.konnektor_base_url, creds.username, creds.password)
 
@@ -76,24 +76,4 @@ class DiscoverLockedSmcbWorker:
                         if self.sentry_checkins:
                             self.sentry_checkins.in_progress(verify_job)
 
-                        await self.verify_job_queue.put(verify_job)  
-
-    async def run(self):
-        self.ensure_connected()
-        while True:
-            discover_job = await self.discover_job_queue.get()
-            
-            try:
-                log.info(f"Start job", extra={ "job": discover_job })
-                
-                await self.handle(discover_job)
-                
-                log.info(f"End job", extra={ "job": discover_job })
-                if self.sentry_checkins:
-                    self.sentry_checkins.ok(discover_job)
-            except Exception as e:
-                log.exception(f"Error during job", extra={ "job": discover_job })
-                if self.sentry_checkins:
-                    self.sentry_checkins.error(discover_job)
-            
-            self.discover_job_queue.task_done()
+                        await self.verify_job_queue.put(verify_job)

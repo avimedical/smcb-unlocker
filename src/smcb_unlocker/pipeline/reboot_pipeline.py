@@ -27,7 +27,7 @@ class RebootPipeline:
             for konnektor_name, konnektor_config in self.config.konnektors.items() if konnektor_config.reboot_cron
         ]
         workers = [
-            RebootWorker(self.config.credentials, sentry_checkins=sentry_checkins)
+            RebootWorker(self.config.credentials, timeout=self.config.httpx_timeout, sentry_checkins=sentry_checkins)
             for _ in range(self.config.reboot_workers)
         ]
         

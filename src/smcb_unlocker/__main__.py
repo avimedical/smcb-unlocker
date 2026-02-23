@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 import logging
 
 import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from smcb_unlocker.config import Config
 from smcb_unlocker.logging import configure_google_logging, configure_simple_logging
@@ -26,7 +27,17 @@ def configure_logging(config: Config):
 def main():
     config = Config()
     configure_logging(config)
-    sentry_sdk.init(dsn=config.sentry_dsn, environment=config.sentry_environment)
+    sentry_sdk.init(
+        dsn=config.sentry_dsn,
+        environment=config.sentry_environment,
+        release=config.sentry_release,
+        integrations=[
+            LoggingIntegration(
+                level=logging.WARNING,       # breadcrumbs from WARNING+
+                event_level=logging.CRITICAL, # only CRITICAL creates events
+            ),
+        ],
+    )
 
     pipelines = [
         LogExportPipeline(config),
